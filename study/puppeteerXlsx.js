@@ -5,6 +5,7 @@ const fs = require('fs');
 const puppeteer = require('puppeteer');
 const xlsx = require('xlsx');
 const add_to_sheet = require('./add_to_sheet');
+const axios = require('axios');
 // parsing data
 const workbook = xlsx.readFile('./store/xlsx/data.xlsx');
 const ws = workbook.Sheets.영화목록;
@@ -40,8 +41,8 @@ const crawler = async () => {
     add_to_sheet(ws, 'C1', 's', '평점');
     add_to_sheet(ws, 'D1', 's', '이미지');
 
-    // using for of
-    // guarantee order, and do process one by one, but slow
+    // using for( of array.entries()){}
+    // do process one by one, so guarantee order but slow
     for ([i, r] of records.entries()) {
       await page.goto(r.링크);
       // after creating page, using page.evaluate to manipulate dom tree
@@ -66,10 +67,16 @@ const crawler = async () => {
         add_to_sheet(ws, newCell, 'n', result.score.trim());
       }
       if (result.img) {
+        // insert img url into xlsx file
         const newCell = 'D' + (i + 2);
         add_to_sheet(ws, newCell, 's', result.img.replace(/\?.*$/, ''));
+
+        // request axios get, then parsing img buffer
+        const imgResult = await axios.get(result.img.replace(/\?.*$/, ''), {
+          responseType: 'arraybuffer',
+        });
+        fs.writeFileSync(`poster/${r.제목}.jpg`, imgResult.data);
       }
-      await page.waitForTimeout(1000);
     }
 
     await page.close();
