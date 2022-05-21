@@ -18,7 +18,7 @@ fs.readdir('screenshot', (err) => {
   if (err) {
     console.error(' screenshot 폴더가 없어서 새로 생성');
     // can use Sync, because this line is in top of code
-    // Sync causes blocking, so do not use this in middle of code
+    // Sync causes blocking, so do not use any kind of Sync method in middle of code
     fs.mkdirSync('screenshot');
   }
 });
@@ -32,8 +32,17 @@ fs.readdir('poster', (err) => {
 
 const crawler = async () => {
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    // args option, browser size, width, height
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--window-size=1000,700'],
+    });
     const page = await browser.newPage();
+    // setViewport , page size, width, height
+    await page.setViewport({
+      width: 1000,
+      height: 700,
+    });
     await page.setUserAgent(
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36'
     );
@@ -45,8 +54,9 @@ const crawler = async () => {
     // do process one by one, so guarantee order but slow
     for ([i, r] of records.entries()) {
       await page.goto(r.링크);
-      // after creating page, using page.evaluate to manipulate dom tree
+      // after creating page, using page.evaluate to manipulate DOM tree
       const result = await page.evaluate(() => {
+        // get DOM element
         const scoreEl = document.querySelector('#pointNetizenPersentBasic');
         const imgEl = document.querySelector(
           '#content > div.article > div.mv_info_area > div.poster > a > img'
@@ -67,7 +77,7 @@ const crawler = async () => {
         add_to_sheet(ws, newCell, 'n', result.score.trim());
       }
       if (result.img) {
-        // insert img url into xlsx file
+        // insert img url string into xlsx file
         const newCell = 'D' + (i + 2);
         add_to_sheet(ws, newCell, 's', result.img.replace(/\?.*$/, ''));
 
@@ -75,7 +85,11 @@ const crawler = async () => {
         const imgResult = await axios.get(result.img.replace(/\?.*$/, ''), {
           responseType: 'arraybuffer',
         });
+        // Can use Sync, because this line is in bottom of code
         fs.writeFileSync(`poster/${r.제목}.jpg`, imgResult.data);
+
+        // screenshot
+        await page.screenshot({ path: `screenshot/${r.제목}.png` });
       }
     }
 
