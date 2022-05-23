@@ -13,7 +13,7 @@ const ws = workbook.Sheets.영화목록;
 const records = xlsx.utils.sheet_to_json(ws);
 
 // write dir by using fs module
-// typical code to mkdir, so recommend to memorize code blow
+// this is typical code to mkdir, so recommend to memorize blow
 fs.readdir('screenshot', (err) => {
   if (err) {
     console.error(' screenshot 폴더가 없어서 새로 생성');
@@ -34,7 +34,7 @@ const crawler = async () => {
   try {
     // args option, browser size, width, height
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: ['--window-size=1000,700'],
     });
     const page = await browser.newPage();
@@ -50,7 +50,7 @@ const crawler = async () => {
     add_to_sheet(ws, 'C1', 's', '평점');
     add_to_sheet(ws, 'D1', 's', '이미지');
 
-    // using for( of array.entries()){}
+    // using for( [a,b] of array.entries()){}
     // do process one by one, so guarantee order but slow
     for ([i, r] of records.entries()) {
       await page.goto(r.링크);
@@ -72,6 +72,7 @@ const crawler = async () => {
         return { score, img };
       });
       if (result.score) {
+        // get score, then insert data into xlsx file
         console.log(`'${r.제목}' 평점 ${result.score.trim()}`);
         const newCell = 'C' + (i + 2);
         add_to_sheet(ws, newCell, 'n', result.score.trim());
