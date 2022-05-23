@@ -64,3 +64,12 @@ const xlsx = require('xlsx');
 3. 그곳에서 html 에 있는 원하는 데이터 추출
 4. 그 데이터를 다시 2차원 배열안에 넣어줌
 5. csv, xlsx 로 만들어주면 끝
+
+
+# infinite Scroll crawler
+
+xlsx, csv 파일에 나와있는 특정 주소로 이동하지 않고
+특정 웹 사이트에 가서 모든 내용을 다 가져올 때 사용
+
+<br>
+동작 원리는 이제까지와 같음
