@@ -25,11 +25,15 @@ const crawler = async () => {
       const imgEls = document.querySelectorAll('.ripi6 div.VQW0y.Jl9NH');
       if (imgEls.length) {
         imgEls.forEach((v) => {
+          //
           img.push(v.querySelector('img.YVj9w').src);
-          // v is img tag
-          // parentElement of v is div tag
-          // remove parentElement(container(div) of img tag(v))
-          v.parentElement.remove();
+          let temp = v.closest('figure');
+          const className = temp.closest('div').className;
+          if (className === '') {
+            temp.closest('div').remove();
+          } else if (className === 'ripi6') {
+            temp.remove();
+          }
         });
       }
       return img;
