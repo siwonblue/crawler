@@ -16,32 +16,38 @@ const crawler = async () => {
     });
 
     await page.goto('https://unsplash.com/');
-    const result = await page.evaluate(() => {
-      // fix scroll to absolute coordinate (0,0) to avoid attach to bottom
-      // window.scrollTo(0, 0);
-      let img = [];
-      // imgEls is type of NodeList
-      // can use forEach, Array.form(), more details see MDN
-      const imgEls = document.querySelectorAll('.ripi6 div.VQW0y.Jl9NH');
-      if (imgEls.length) {
-        imgEls.forEach((v) => {
-          //
-          img.push(v.querySelector('img.YVj9w').src);
-          let temp = v.closest('figure');
-          const className = temp.closest('div').className;
-          if (className === '') {
-            temp.closest('div').remove();
-          } else if (className === 'ripi6') {
-            temp.remove();
-          }
-        });
-      }
-      return img;
-    });
 
+    let result = [];
+    while (result.length < 1000) {
+      const srcs = await page.evaluate(() => {
+        window.scrollTo(0, 200);
+        // fix scroll to absolute coordinate (0,0) to avoid attach to bottom
+        let imgs = [];
+        // imgEls is type of NodeList
+        // can use forEach, Array.form(), more details see MDN
+        const imgEls = document.querySelectorAll('.ripi6 div.VQW0y.Jl9NH');
+        if (imgEls.length) {
+          imgEls.forEach((v) => {
+            imgs.push(v.querySelector('img.YVj9w').src);
+            let temp = v.closest('figure');
+            const className = temp.closest('div').className;
+            if (className === '') {
+              temp.closest('div').remove();
+            } else if (className === 'ripi6') {
+              temp.remove();
+            }
+          });
+        }
+
+        return imgs;
+      });
+      result = result.concat(srcs);
+    }
     console.log(result.length);
-    // await page.close();
-    // await browser.close();
-  } catch (e) {}
+    await page.close();
+    await browser.close();
+  } catch (e) {
+    console.error(e);
+  }
 };
 crawler();
